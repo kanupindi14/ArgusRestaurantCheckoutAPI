@@ -10,24 +10,24 @@ namespace RestaurantCheckoutTests.Hooks
     [Binding]
     public sealed class TestHooks
     {
-        public static IPlaywright PlaywrightInstance;
-        public static IAPIRequestContext ApiContext;
-        public static TestConfig Config;
+        public static IPlaywright PlaywrightInstance { get; set; } = null!;
+        public static IAPIRequestContext ApiContext { get; set; } = null!;
+        public static TestConfig Config { get; set; } = null!;
 
         [BeforeTestRun]
         public static void BeforeTestRun()
         {
             // Load configuration from Utilities/config.json
             string configContent = File.ReadAllText("Utilities/config.json");
-            Config = JsonSerializer.Deserialize<TestConfig>(configContent);
+            Config = JsonSerializer.Deserialize<TestConfig>(configContent) ?? new TestConfig();
         }
 
         [AfterTestRun]
         public static async Task AfterTestRun()
         {
-            if(ApiContext != null)
+            if (ApiContext != null)
                 await ApiContext.DisposeAsync();
-            if(PlaywrightInstance != null)
+            if (PlaywrightInstance != null)
                 PlaywrightInstance.Dispose();
         }
 
@@ -51,6 +51,7 @@ namespace RestaurantCheckoutTests.Hooks
 
     public class TestConfig
     {
-        public string baseUrl { get; set; }
+        public string baseUrl { get; set; } = "";
     }
+
 }
