@@ -1,13 +1,16 @@
+using System;
+using System.Globalization;
 using System.Text.Json;
+using System.Threading.Tasks;
 using TechTalk.SpecFlow;
 using RestaurantCheckoutTests.Common;
 using RestaurantCheckoutTests.Hooks;
 using Microsoft.Playwright;
+using NUnit.Framework;
 
 namespace RestaurantCheckoutTests.StepDefinitions
 {
     [Binding]
-
     [Scope(Feature = "Order Cancellation")]
     public class OrderCancellationSteps
     {
@@ -15,7 +18,7 @@ namespace RestaurantCheckoutTests.StepDefinitions
         private int _starters;
         private int _mains;
         private int _drinks;
-        private string _orderTime = string.Empty;
+        private string _orderTime = "";
         private IAPIResponse _response = null!;
         
         // Store per-person order details for reuse.
@@ -56,8 +59,8 @@ namespace RestaurantCheckoutTests.StepDefinitions
             await SendOrderAsync();
         }
 
-        [Then(@"the API should return the correct total\.")]
-        public async Task ThenTheAPIShouldReturnTheCorrectTotal()
+        [Then(@"the API should return the correct total bill\.")]
+        public async Task ThenTheAPIShouldReturnTheCorrectTotalBill()
         {
             await CheckoutVerification.VerifyOrderTotalsAsync(_response, _starters, _mains, _drinks, _orderTime);
         }

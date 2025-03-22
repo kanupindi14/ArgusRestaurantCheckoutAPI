@@ -17,7 +17,7 @@ namespace RestaurantCheckoutTests.StepDefinitions
         private int _starters;
         private int _mains;
         private int _drinks;
-        protected string _orderTime = string.Empty;
+        protected string _orderTime = "";
         protected IAPIResponse _response = null!;
 
         private async Task SendOrderAsync()
@@ -58,7 +58,7 @@ namespace RestaurantCheckoutTests.StepDefinitions
             {
                 Assert.Fail("Response JSON is null.");
             }
-            string error = json.Value.GetProperty("error").GetString() ?? string.Empty;
+            string error = json.Value.GetProperty("error").GetString() ?? "string.Empty";
             Assert.That(error, Is.EqualTo(expectedError), "Error message mismatch");
         }
     }

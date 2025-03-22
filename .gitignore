@@ -1,0 +1,72 @@
+# -- .NET / C# Ignore Patterns --
+
+# Build outputs
+bin/
+obj/
+
+# Visual Studio files
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+
+# Rider / VS Code / Resharper
+.idea/
+.vscode/
+*.sln.iml
+*.DotSettings.user
+
+# Test results
+TestResults/
+*.TestResults.xml
+*.trx
+*.coverage
+*.coveragexml
+
+# Logs
+*.log
+*.tlog
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
+
+# OS-specific
+Thumbs.db
+.DS_Store
+
+# -- Node / npm Ignore Patterns --
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment files (if any)
+.env
+.env.local
+
+# -- Other Common Exclusions --
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Additional security or local config
+*.secret
+*.key
+*.pfx
+*.p12
+
+# Build artifacts from Node or other tools
+dist/
+build/
+
+# Misc
+*.tmp
+*.cache

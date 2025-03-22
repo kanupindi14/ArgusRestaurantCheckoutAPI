@@ -16,7 +16,7 @@ namespace RestaurantCheckoutTests.StepDefinitions
         protected int _starters;
         protected int _mains;
         protected int _drinks;
-        protected string _orderTime = string.Empty;
+        protected string _orderTime = "";
         protected IAPIResponse _response = null!;
         private async Task SendOrderAsync()
         {

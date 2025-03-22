@@ -10,25 +10,25 @@ using NUnit.Framework;
 namespace RestaurantCheckoutTests.StepDefinitions
 {
     [Binding]
-     [Scope(Feature = "Order Modification")]
+    [Scope(Feature = "Order Modification")]
     public class OrderModificationSteps
     {
         // Initial order details (with discount)
         private int _initialStarters;
         private int _initialMains;
         private int _initialDrinks;
-        private string _initialOrderTime;
+        private string _initialOrderTime = "";
 
-        // Additional order details (for joiners after discount period)
+        // Additional joiners details
         private int _additionalPeople;
-        private string _additionalOrderTime;
+        private string _additionalOrderTime = string.Empty;
 
         // Aggregated order details
         private int _totalStarters;
         private int _totalMains;
         private int _totalDrinks;
-        private string _finalOrderTime;
-        private IAPIResponse _response;
+        private string _finalOrderTime = string.Empty;
+        private IAPIResponse _response = null!;
 
         private async Task SendAggregatedOrderAsync()
         {
@@ -47,7 +47,6 @@ namespace RestaurantCheckoutTests.StepDefinitions
         [Given(@"a group of (\d+) places an order at ""(.*)""")]
         public void GivenAGroupOfPlacesAnOrderAt(int groupSize, string orderTime)
         {
-            // For the initial order (discount applies)
             _initialOrderTime = orderTime;
             _initialStarters = 0;
             _initialMains = 0;
@@ -76,40 +75,28 @@ namespace RestaurantCheckoutTests.StepDefinitions
             await CheckoutVerification.VerifyOrderTotalsAsync(_response, _initialStarters, _initialMains, _initialDrinks, _initialOrderTime);
         }
 
-        // Dynamic step for additional joiners with optional order items.
-        [Given(@"(\d+) more people join the group at ""(.*)""")]
+        // Bind the step for joiners. We use a [Given] binding for consistency.
+        [When(@"(.*) more people join the group at ""(.*)""")]
         public void GivenMorePeopleJoinTheGroupAt(int additionalPeople, string orderTime)
         {
             _additionalPeople = additionalPeople;
             _additionalOrderTime = orderTime;
         }
 
-        // Optional parameters using named groups for starters, mains, and drinks.
-        [When(@"they order(?:\s*(?<starters>\d+)\s*starters)?(?:[,\s]*(?<mains>\d+)\s*mains)?(?:[,\s]*(?<drinks>\d+)\s*drinks)?")]
-        public async Task WhenTheyOrderAdditionalItems(string starters, string mains, string drinks)
+        // Bind the step for additional order items (only mains and drinks) from joiners.
+        [When(@"they order (\d+) mains and (\d+) drinks")]
+        public async Task WhenTheyOrderMainsAndDrinks(int additionalMains, int additionalDrinks)
         {
-            int additionalStarters = 0;
-            int additionalMains = 0;
-            int additionalDrinks = 0;
-            
-            if (!string.IsNullOrEmpty(starters))
-                additionalStarters = int.Parse(starters);
-            if (!string.IsNullOrEmpty(mains))
-                additionalMains = int.Parse(mains);
-            if (!string.IsNullOrEmpty(drinks))
-                additionalDrinks = int.Parse(drinks);
-
-            // Aggregate the order: add additional items to the initial order.
-            _totalStarters = _initialStarters + additionalStarters;
+            // For this step, we assume the joiners order no starters.
+            // Update aggregated totals: initial order remains, plus additional joiners' items.
+            _totalStarters = _initialStarters; // unchanged
             _totalMains = _initialMains + additionalMains;
             _totalDrinks = _initialDrinks + additionalDrinks;
-            // Final order time is that of the additional joiners.
-            _finalOrderTime = _additionalOrderTime;
-
+            _finalOrderTime = _additionalOrderTime; // This will be "20:00"
             await SendAggregatedOrderAsync();
         }
 
-        [Then(@"the API should calculate the final bill correctly, applying the discount only to drinks ordered before 19:00 and should return the correct total bill")]
+        [Then(@"the API should calculate the final bill correctly by applying the discount only to drinks ordered before 19:00 and should return the correct total bill")]
         public async Task ThenTheAPIFinalBillShouldBeCalculatedCorrectly()
         {
             await CheckoutVerification.VerifyOrderTotalsAsync(_response, _totalStarters, _totalMains, _totalDrinks, _finalOrderTime);
