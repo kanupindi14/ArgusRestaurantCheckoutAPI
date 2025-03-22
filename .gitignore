@@ -70,3 +70,4 @@ build/
 # Misc
 *.tmp
 *.cache
+*.feature.cs
