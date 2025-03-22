@@ -1,23 +1,22 @@
-using System;
-using System.Globalization;
-using System.Threading.Tasks;
+using System.Text.Json;
 using TechTalk.SpecFlow;
 using RestaurantCheckoutTests.Common;
 using RestaurantCheckoutTests.Hooks;
 using Microsoft.Playwright;
-using NUnit.Framework;
 
 namespace RestaurantCheckoutTests.StepDefinitions
 {
     [Binding]
+
+    [Scope(Feature = "Order Cancellation")]
     public class OrderCancellationSteps
     {
         private int _groupSize;
         private int _starters;
         private int _mains;
         private int _drinks;
-        private string _orderTime;
-        private IAPIResponse _response;
+        private string _orderTime = string.Empty;
+        private IAPIResponse _response = null!;
         
         // Store per-person order details for reuse.
         private int _individualStarters;
@@ -42,7 +41,7 @@ namespace RestaurantCheckoutTests.StepDefinitions
         public void GivenAGroupOfPlacesAnOrder(int groupSize)
         {
             _groupSize = groupSize;
-            _orderTime = "18:30"; // default valid time
+            _orderTime = "18:30";
             _starters = 0;
             _mains = 0;
             _drinks = 0;
@@ -73,22 +72,24 @@ namespace RestaurantCheckoutTests.StepDefinitions
         [Then(@"the API should return ""(.*)"" and total should be 0")]
         public async Task ThenTheAPIReturnsOrderCanceledAndZeroTotal(string expectedMessage)
         {
-            var json = await _response.JsonAsync();
-            string message = json.GetProperty("message").ToString();
-            double orderTotal = Convert.ToDouble(json.GetProperty("order_total").ToString(), CultureInfo.InvariantCulture);
+            JsonElement? json = await _response.JsonAsync();
+            if (!json.HasValue)
+            {
+                Assert.Fail("Response JSON is null.");
+            }
+            string message = json.Value.GetProperty("message").GetString() ?? string.Empty;
+            double orderTotal = json.Value.GetProperty("order_total").GetDouble();
 
-            Assert.AreEqual(expectedMessage, message, "Cancellation message mismatch");
-            Assert.AreEqual(0, orderTotal, "Order total should be 0 after cancellation");
+            Assert.That(message, Is.EqualTo(expectedMessage), "Cancellation message mismatch");
+            Assert.That(orderTotal, Is.EqualTo(0), "Order total should be 0 after cancellation");
         }
 
         [When(@"each of them placed order (\d+) starters, (\d+) mains, and (\d+) drink\.")]
         public async Task WhenEachOfThemPlacedOrderItems(int starters, int mains, int drink)
         {
-            // Store individual order details for reuse in cancellation
             _individualStarters = starters;
             _individualMains = mains;
             _individualDrinks = drink;
-            // Calculate totals based on the current group size.
             _starters = _groupSize * starters;
             _mains = _groupSize * mains;
             _drinks = _groupSize * drink;
@@ -98,9 +99,7 @@ namespace RestaurantCheckoutTests.StepDefinitions
         [When(@"(\d+) person cancels their order")]
         public async Task WhenAPersonCancelsTheirOrder(int personsCanceling)
         {
-            // Reduce the group size by the number of persons cancelling.
             _groupSize -= personsCanceling;
-            // Recalculate totals using the stored per-person order values.
             _starters = _groupSize * _individualStarters;
             _mains = _groupSize * _individualMains;
             _drinks = _groupSize * _individualDrinks;

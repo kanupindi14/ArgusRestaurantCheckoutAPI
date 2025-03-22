@@ -1,8 +1,6 @@
-using System;
 using System.Globalization;
-using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.Playwright;
-using NUnit.Framework;
 
 namespace RestaurantCheckoutTests.Common
 {
@@ -14,15 +12,20 @@ namespace RestaurantCheckoutTests.Common
             double expectedDrinksTotal = CommonCheckoutHelper.CalculateExpectedDrinksTotal(drinks, orderTime);
             double expectedOrderTotal = expectedFoodTotal + expectedDrinksTotal;
 
-            var json = await response.JsonAsync();
-            double foodTotal = Convert.ToDouble(json.GetProperty("food_total").ToString(), CultureInfo.InvariantCulture);
-            double drinksTotal = Convert.ToDouble(json.GetProperty("drinks_total").ToString(), CultureInfo.InvariantCulture);
-            double orderTotal = Convert.ToDouble(json.GetProperty("order_total").ToString(), CultureInfo.InvariantCulture);
+            JsonElement? json = await response.JsonAsync();
+            if (!json.HasValue)
+            {
+                Assert.Fail("Response JSON is null.");
+            }
+
+            double foodTotal = Convert.ToDouble(json.Value.GetProperty("food_total").ToString(), CultureInfo.InvariantCulture);
+            double drinksTotal = Convert.ToDouble(json.Value.GetProperty("drinks_total").ToString(), CultureInfo.InvariantCulture);
+            double orderTotal = Convert.ToDouble(json.Value.GetProperty("order_total").ToString(), CultureInfo.InvariantCulture);
 
             double tolerance = 0.01;
-            Assert.AreEqual(expectedFoodTotal, foodTotal, tolerance, "Food total mismatch");
-            Assert.AreEqual(expectedDrinksTotal, drinksTotal, tolerance, "Drinks total mismatch");
-            Assert.AreEqual(expectedOrderTotal, orderTotal, tolerance, "Order total mismatch");
+            Assert.That(foodTotal, Is.EqualTo(expectedFoodTotal).Within(tolerance), "Food total mismatch");
+            Assert.That(drinksTotal, Is.EqualTo(expectedDrinksTotal).Within(tolerance), "Drinks total mismatch");
+            Assert.That(orderTotal, Is.EqualTo(expectedOrderTotal).Within(tolerance), "Order total mismatch");
         }
     }
 }

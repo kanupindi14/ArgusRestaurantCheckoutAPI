@@ -10,6 +10,7 @@ using NUnit.Framework;
 namespace RestaurantCheckoutTests.StepDefinitions
 {
     [Binding]
+     [Scope(Feature = "Order Modification")]
     public class OrderModificationSteps
     {
         // Initial order details (with discount)

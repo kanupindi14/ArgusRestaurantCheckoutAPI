@@ -5,18 +5,20 @@ using TechTalk.SpecFlow;
 using RestaurantCheckoutTests.Hooks;
 using Microsoft.Playwright;
 using NUnit.Framework;
+using System.Text.Json;
 
 namespace RestaurantCheckoutTests.StepDefinitions
 {
     [Binding]
+    [Scope(Feature = "Checkout API - Handle Zero and Negative Quantities")]
     public class ErrorHandlingSteps
     {
         private int _groupSize;
         private int _starters;
         private int _mains;
         private int _drinks;
-        private string _orderTime;
-        private IAPIResponse _response;
+        protected string _orderTime = string.Empty;
+        protected IAPIResponse _response = null!;
 
         private async Task SendOrderAsync()
         {
@@ -51,9 +53,13 @@ namespace RestaurantCheckoutTests.StepDefinitions
         [Then(@"the API should return an error message ""(.*)""")]
         public async Task ThenTheAPIShouldReturnAnErrorMessage(string expectedError)
         {
-            var json = await _response.JsonAsync();
-            string error = json.GetProperty("error").ToString();
-            Assert.AreEqual(expectedError, error, "Error message mismatch");
+            JsonElement? json = await _response.JsonAsync();
+            if (!json.HasValue)
+            {
+                Assert.Fail("Response JSON is null.");
+            }
+            string error = json.Value.GetProperty("error").GetString() ?? string.Empty;
+            Assert.That(error, Is.EqualTo(expectedError), "Error message mismatch");
         }
     }
 }

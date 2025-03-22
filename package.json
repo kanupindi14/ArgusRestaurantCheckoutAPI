@@ -1,0 +1,23 @@
+{
+  "name": "argusrestaurantcheckoutapi",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+  "start": "node MockAPI/restaurentMockAPI.js"
+},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kanupindi14/ArgusRestaurantCheckoutAPI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kanupindi14/ArgusRestaurantCheckoutAPI/issues"
+  },
+  "homepage": "https://github.com/kanupindi14/ArgusRestaurantCheckoutAPI#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
